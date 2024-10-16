@@ -2,7 +2,7 @@
   "name": "SayKey",
   "productName": "SayKey",
   "version": "1.0.0",
-  "description": "A Speech-to-Text Input Method",
+  "description": "SayKey",
   "main": "dist/main.js",
   "icon": "src/icon-light.ico",
   "scripts": {
@@ -58,6 +58,7 @@
     "appId": "com.Saykey.Saykey",
     "productName": "Saykey",
     "icon": "src/icon-light.ico",
+    "compression": "maximum",
     "files": [
       "dist/**/*",
       "src/**/*",
