@@ -1,0 +1,13 @@
+/node_modules
+
+/dist
+/build
+
+.next
+out
+release
+
+.idea/
+
+*.tmp
+*.temp

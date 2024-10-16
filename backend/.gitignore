@@ -1,0 +1,12 @@
+
+venv/
+
+
+build/
+dist/
+*.spec
+
+.idea/
+
+data/
+*.wav

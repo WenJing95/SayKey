@@ -1,0 +1,2 @@
+backend/punc-onnx/punc.onnx filter=lfs diff=lfs merge=lfs -text
+backend/sherpa-onnx/model.int8.onnx filter=lfs diff=lfs merge=lfs -text

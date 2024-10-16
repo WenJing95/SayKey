@@ -1,0 +1,3 @@
+include cttpunctuator/src/onnx/configuration.json
+include cttpunctuator/src/onnx/punc.onnx
+include cttpunctuator/src/onnx/punc.yaml

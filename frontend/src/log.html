@@ -1,0 +1,538 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>SayKey Logs</title>
+    <link rel="icon" href="favicon/favicon.ico">
+    <link rel="apple-touch-icon" sizes="180x180" href="favicon/apple-touch-icon.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="favicon/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="favicon/favicon-16x16.png">
+    <link rel="manifest" href="favicon/site.webmanifest">
+	<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+	<style>
+        :root {
+            --background: #ffffff;
+            --foreground: #000000;
+            --muted: #f1f5f9;
+            --muted-foreground: #64748b;
+            --border: #e2e8f0;
+            --input: #e2e8f0;
+            --primary: #000000;
+            --primary-foreground: #ffffff;
+            --secondary: #f1f5f9;
+            --secondary-foreground: #1e293b;
+            --accent: #f1f5f9;
+            --accent-foreground: #0f172a;
+            --ring: #94a3b8;
+            --scrollbar-thumb: #e2e8f0;
+            --scrollbar-track: #ffffff;
+            --highlight: #fef08a;
+        }
+        body, html {
+            font-family: 'IBM Plex Mono', monospace;
+            line-height: 1.5;
+            color: var(--foreground);
+            margin: 0;
+            padding: 0;
+            height: 100%;
+            background-color: var(--background);
+            overflow: hidden;
+        }
+        .container {
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            padding: 20px;
+            box-sizing: border-box;
+            overflow: hidden;
+        }
+        .card-header {
+            margin-bottom: 16px;
+            padding-bottom: 16px;
+            border-bottom: 1px solid var(--border);
+        }
+        .card-title {
+            font-size: 24px;
+            font-weight: 600;
+            margin: 0;
+            color: var(--foreground);
+            letter-spacing: -0.5px;
+        }
+        .button {
+            font-family: 'IBM Plex Mono', monospace;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 0.375rem;
+            font-size: 0.75rem;
+            font-weight: 500;
+            height: 2rem;
+            padding-left: 0.75rem;
+            padding-right: 0.75rem;
+            background-color: var(--background);
+            color: var(--foreground);
+            border: 1px solid var(--input);
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        .button:hover {
+            background-color: var(--accent);
+            color: var(--accent-foreground);
+            transform: translateY(-1px);
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+        .button:active {
+            transform: translateY(0);
+            box-shadow: none;
+        }
+        .button:focus-visible {
+            outline: 2px solid transparent;
+            outline-offset: 2px;
+            box-shadow: 0 0 0 2px var(--background), 0 0 0 4px var(--ring);
+        }
+        .button svg {
+            height: 0.875rem;
+            width: 0.875rem;
+            margin-right: 0.375rem;
+            transition: transform 0.2s ease;
+        }
+        .button:hover svg {
+            transform: scale(1.1);
+        }
+        .log-container {
+            flex-grow: 1;
+            overflow-y: auto;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 16px;
+            background-color: var(--background);
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+            margin-bottom: 20px;
+        }
+        .log-container::-webkit-scrollbar {
+            width: 10px;
+        }
+        .log-container::-webkit-scrollbar-track {
+            background: var(--scrollbar-track);
+            border-radius: 5px;
+        }
+        .log-container::-webkit-scrollbar-thumb {
+            background: var(--scrollbar-thumb);
+            border-radius: 5px;
+        }
+        .log-container::-webkit-scrollbar-thumb:hover {
+            background: var(--muted-foreground);
+        }
+        .log-entry {
+            display: flex;
+            align-items: center;
+            padding: 8px;
+            border-bottom: 1px solid var(--border);
+            font-size: 14px;
+            animation: fadeIn 0.3s ease-out;
+            transition: background-color 0.2s ease;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .log-entry:last-child {
+            border-bottom: none;
+        }
+        .log-entry:hover {
+            background-color: var(--muted);
+        }
+        .log-icon {
+            margin-right: 12px;
+            transition: transform 0.2s ease;
+        }
+        .log-entry:hover .log-icon {
+            transform: scale(1.1);
+        }
+        .log-timestamp {
+            color: var(--muted-foreground);
+            font-size: 12px;
+            margin-right: 12px;
+            font-weight: 400;
+        }
+        .card-footer {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-between;
+            align-items: center;
+            padding-top: 16px;
+            border-top: 1px solid var(--border);
+            color: var(--muted-foreground);
+            font-size: 12px;
+            font-weight: 400;
+        }
+        .footer-left, .footer-right {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+        .footer-link {
+            color: var(--muted-foreground);
+            text-decoration: none;
+            transition: color 0.2s ease;
+        }
+        .footer-link:hover {
+            color: var(--foreground);
+        }
+        .github-icon {
+            width: 16px;
+            height: 16px;
+            vertical-align: middle;
+            margin-right: 4px;
+        }
+        .button-group {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 16px;
+            flex-wrap: wrap;
+        }
+        .close-btn {
+            font-family: 'IBM Plex Mono', monospace;
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            width: 2rem;
+            height: 2rem;
+            border-radius: 0.375rem;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            background-color: var(--background);
+            color: var(--foreground);
+            border: 1px solid var(--input);
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        .close-btn:hover {
+            background-color: var(--accent);
+            color: var(--accent-foreground);
+            transform: translateY(-1px);
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+        .close-btn:active {
+            transform: translateY(0);
+            box-shadow: none;
+        }
+        .close-btn:focus-visible {
+            outline: 2px solid transparent;
+            outline-offset: 2px;
+            box-shadow: 0 0 0 2px var(--background), 0 0 0 4px var(--ring);
+        }
+        .close-btn svg {
+            height: 1rem;
+            width: 1rem;
+            transition: transform 0.2s ease;
+        }
+        .close-btn:hover svg {
+            transform: scale(1.1);
+        }
+        .search-container {
+            display: flex;
+            align-items: center;
+            position: relative;
+            width: 300px;
+        }
+        .search-input {
+            font-family: 'IBM Plex Mono', monospace;
+            width: 100%;
+            padding: 0.375rem 0.75rem 0.375rem 2rem;
+            border: 1px solid var(--border);
+            border-radius: 0.375rem;
+            font-size: 0.75rem;
+            outline: none;
+            transition: border-color 0.2s ease;
+        }
+        .search-input:focus {
+            border-color: var(--ring);
+        }
+        .search-icon {
+            position: absolute;
+            left: 0.5rem;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--muted-foreground);
+            width: 1rem;
+            height: 1rem;
+        }
+        .highlight {
+            background-color: var(--highlight);
+            padding: 0.1em 0;
+        }
+	</style>
+</head>
+<body>
+<div class="container">
+	<button class="close-btn" id="close-btn" aria-label="Close">
+		<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+			<line x1="18" y1="6" x2="6" y2="18"></line>
+			<line x1="6" y1="6" x2="18" y2="18"></line>
+		</svg>
+	</button>
+	<div class="card-header">
+		<h1 class="card-title" id="logsTitle">SayKey Logs</h1>
+	</div>
+	<div class="button-group">
+		<div class="search-container">
+			<svg class="search-icon" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+				<circle cx="11" cy="11" r="8"></circle>
+				<line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+			</svg>
+			<input type="text" id="search-input" class="search-input" placeholder="Search logs...">
+		</div>
+		<div>
+			<button class="button" id="download-btn">
+				<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+					<path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+					<polyline points="7 10 12 15 17 10"></polyline>
+					<line x1="12" y1="15" x2="12" y2="3"></line>
+				</svg>
+				<span id="downloadText">Download</span>
+			</button>
+			<button class="button" id="clear-btn">
+				<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+					<polyline points="3 6 5 6 21 6"></polyline>
+					<path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+				</svg>
+				<span id="clearText">Clear</span>
+			</button>
+		</div>
+	</div>
+	<div class="log-container" id="logs"></div>
+	<div class="card-footer">
+		<div class="footer-left">
+			<span>SayKey v1.0.0</span>
+			<a href="https://github.com/WenJing95/SayKey" class="footer-link" target="_blank" rel="noopener noreferrer">
+				<svg class="github-icon" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+					<path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"></path>
+				</svg>
+				GitHub
+			</a>
+		</div>
+		<div class="footer-right">
+			<span>License: MIT</span>
+		</div>
+	</div>
+</div>
+<script>
+  const logsElement = document.getElementById('logs');
+  const downloadBtn = document.getElementById('download-btn');
+  const clearBtn = document.getElementById('clear-btn');
+  const closeBtn = document.getElementById('close-btn');
+  const searchInput = document.getElementById('search-input');
+  let logCount = 0;
+  let allLogs = [];
+  let isAtBottom = true;
+  let tempLogs = [];
+
+  let translations = {};
+  let currentLanguage = 'English';
+
+  async function loadTranslations() {
+    currentLanguage = await window.electron.getCurrentLanguage();
+    translations = {
+      'English': {
+        'sayKeyLogs': 'SayKey Logs',
+        'download': 'Download',
+        'clear': 'Clear',
+        'searchLogs': 'Search logs...',
+        'version': 'SayKey v1.0.0',
+        'license': 'License: MIT',
+      },
+      '日本語': {
+        'sayKeyLogs': 'SayKeyログ',
+        'download': 'ダウンロード',
+        'clear': 'クリア',
+        'searchLogs': 'ログを検索...',
+        'version': 'SayKey v1.0.0',
+        'license': 'ライセンス: MIT',
+      },
+      '简体中文': {
+        'sayKeyLogs': 'SayKey 日志',
+        'download': '下载',
+        'clear': '清除',
+        'searchLogs': '搜索日志...',
+        'version': 'SayKey v1.0.0',
+        'license': '许可证: MIT',
+      }
+    };
+    updateUIText();
+  }
+
+  function updateUIText() {
+    document.getElementById('logsTitle').textContent = translations[currentLanguage]['sayKeyLogs'];
+    document.getElementById('downloadText').textContent = translations[currentLanguage]['download'];
+    document.getElementById('clearText').textContent = translations[currentLanguage]['clear'];
+    searchInput.placeholder = translations[currentLanguage]['searchLogs'];
+  }
+
+  loadTranslations();
+
+  window.logger.requestLogs();
+
+  window.logger.onLogsReceived((logs) => {
+    allLogs = logs;
+
+    renderLogs(allLogs);
+    isAtBottom = true;
+  });
+
+  window.logger.onLog((message) => {
+    allLogs.push(message);
+    addLogEntry(message);
+  });
+
+  function renderLogs(logs, searchTerm = '') {
+    logsElement.innerHTML = '';
+    logs.forEach(log => {
+      const logEntry = document.createElement('div');
+      logEntry.className = 'log-entry';
+
+      const icon = document.createElement('svg');
+      icon.className = 'log-icon';
+      icon.setAttribute('xmlns', 'http://www.w3.org/2000/svg');
+      icon.setAttribute('width', '16');
+      icon.setAttribute('height', '16');
+      icon.setAttribute('viewBox', '0 0 24 24');
+      icon.setAttribute('fill', 'none');
+      icon.setAttribute('stroke', log.toLowerCase().includes('error') ? '#ef4444' : '#22c55e');
+      icon.setAttribute('stroke-width', '2');
+      icon.setAttribute('stroke-linecap', 'round');
+      icon.setAttribute('stroke-linejoin', 'round');
+
+      if (log.toLowerCase().includes('error')) {
+        icon.innerHTML = '<circle cx="12" cy="12" r="10"></circle><line x1="15" y1="9" x2="9" y2="15"></line><line x1="9" y1="9" x2="15" y2="15"></line>';
+      } else {
+        icon.innerHTML = '<path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline>';
+      }
+
+      const timestamp = document.createElement('span');
+      timestamp.className = 'log-timestamp';
+      timestamp.textContent = new Date().toLocaleTimeString();
+
+      const content = document.createElement('span');
+      content.innerHTML = searchTerm ? highlightText(log, searchTerm) : log;
+
+      logEntry.appendChild(icon);
+      logEntry.appendChild(timestamp);
+      logEntry.appendChild(content);
+
+      logsElement.appendChild(logEntry);
+    });
+    if (isAtBottom) {
+      scrollToBottom();
+    }
+  }
+
+  function addLogEntry(message) {
+    if (!isAtBottom) {
+      tempLogs.push(message);
+      return;
+    }
+
+    const logEntry = document.createElement('div');
+    logEntry.className = 'log-entry';
+
+    const icon = document.createElement('svg');
+    icon.className = 'log-icon';
+    icon.setAttribute('xmlns', 'http://www.w3.org/2000/svg');
+    icon.setAttribute('width', '16');
+    icon.setAttribute('height', '16');
+    icon.setAttribute('viewBox', '0 0 24 24');
+    icon.setAttribute('fill', 'none');
+    icon.setAttribute('stroke', message.toLowerCase().includes('error') ? '#ef4444' : '#22c55e');
+    icon.setAttribute('stroke-width', '2');
+    icon.setAttribute('stroke-linecap', 'round');
+    icon.setAttribute('stroke-linejoin', 'round');
+
+    if (message.toLowerCase().includes('error')) {
+      icon.innerHTML = '<circle cx="12" cy="12" r="10"></circle><line x1="15" y1="9" x2="9" y2="15"></line><line x1="9" y1="9" x2="15" y2="15"></line>';
+    } else {
+      icon.innerHTML = '<path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline>';
+    }
+
+    const timestamp = document.createElement('span');
+    timestamp.className = 'log-timestamp';
+    timestamp.textContent = new Date().toLocaleTimeString();
+
+    const content = document.createElement('span');
+    content.textContent = message;
+
+    logEntry.appendChild(icon);
+    logEntry.appendChild(timestamp);
+    logEntry.appendChild(content);
+
+    logsElement.appendChild(logEntry);
+    logCount++;
+
+    if (isAtBottom) {
+      scrollToBottom();
+    }
+  }
+
+  function scrollToBottom() {
+    logsElement.scrollTop = logsElement.scrollHeight;
+  }
+
+  function checkScrollPosition() {
+    const scrollPosition = logsElement.scrollTop + logsElement.clientHeight;
+    isAtBottom = scrollPosition >= logsElement.scrollHeight - 10; // 10px threshold
+
+    if (isAtBottom && tempLogs.length > 0) {
+      tempLogs.forEach(addLogEntry);
+      tempLogs = [];
+    }
+  }
+
+  function highlightText(text, searchTerm) {
+    if (!searchTerm) return text;
+    const regex = new RegExp(`(${searchTerm})`, 'gi');
+    return text.replace(regex, '<span class="highlight">$1</span>');
+  }
+
+  function performSearch() {
+    const searchTerm = searchInput.value.toLowerCase();
+    if (searchTerm.length > 2) {
+      const filteredLogs = allLogs.filter(log => log.toLowerCase().includes(searchTerm));
+      renderLogs(filteredLogs, searchTerm);
+    } else {
+      renderLogs(allLogs);
+    }
+  }
+
+  downloadBtn.addEventListener('click', () => {
+    const logContent = allLogs.join('\n');
+    const blob = new Blob([logContent], { type: 'text/plain' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'saykey_logs.txt';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  });
+
+  clearBtn.addEventListener('click', () => {
+    allLogs = [];
+    renderLogs(allLogs);
+    logCount = 0;
+  });
+
+  closeBtn.addEventListener('click', () => {
+    window.close();
+  });
+
+  searchInput.addEventListener('input', performSearch);
+
+  logsElement.addEventListener('scroll', checkScrollPosition);
+</script>
+</body>
+</html>

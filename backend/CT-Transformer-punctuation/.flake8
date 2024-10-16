@@ -1,0 +1,21 @@
+[flake8]
+show-source=true
+statistics=true
+max-line-length = 108
+per-file-ignores =
+    # line too long
+    runtime/src/utils/kaldifeat/feature.py : E501
+    runtime/src/utils/kaldifeat/ivector.py : E501
+
+exclude =
+  .git,
+  **/data/**
+    **/onnx/**
+
+ignore =
+  # E203 white space before ":"
+  E203,
+  # W503 line break before binary operator
+  W503,
+  # E226 missing whitespace around arithmetic operator
+  E226,
