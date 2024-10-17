@@ -191,16 +191,22 @@ async def list_audio_devices_api() -> Dict[str, List[Dict[str, Any]]]:
     hostapis = sd.query_hostapis()
     current_device = sd.default.device[0]
     device_list = []
+
     for i, d in enumerate(devices):
         # Get the host API name for the device
         hostapi_name = hostapis[d['hostapi']]['name']
-        # Only consider devices using Windows WASAPI
-        if hostapi_name == 'Windows WASAPI' and d['max_input_channels'] > 0 and is_device_usable(i):
+        # Check if this is the current device
+        is_current_device = i == current_device
+
+        # Only consider devices using Windows WASAPI or the current device
+        if (hostapi_name == 'Windows WASAPI' and d['max_input_channels'] > 0 and is_device_usable(
+                i)) or is_current_device:
             device_list.append({
                 "index": i,
                 "name": d["name"],
-                "is_current": i == current_device
+                "is_current": is_current_device
             })
+
     return {"devices": device_list}
 
 
