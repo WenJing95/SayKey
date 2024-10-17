@@ -91,6 +91,14 @@ def ensure_data_directory() -> None:
     print(f"Data directory ensured at: {data_dir}")
 
 
+def is_device_usable(device_index):
+    try:
+        sd.check_input_settings(device=device_index)
+        return True
+    except Exception:
+        return False
+
+
 def create_recognizer(args: argparse.Namespace) -> sherpa_onnx.OfflineRecognizer:
     """Create the speech recognizer."""
     return sherpa_onnx.OfflineRecognizer.from_sense_voice(
@@ -180,16 +188,19 @@ async def ping():
 async def list_audio_devices_api() -> Dict[str, List[Dict[str, Any]]]:
     """List available audio devices."""
     devices = sd.query_devices()
+    hostapis = sd.query_hostapis()
     current_device = sd.default.device[0]
-    device_list = [
-        {
-            "index": i,
-            "name": d["name"],
-            "is_current": i == current_device
-        }
-        for i, d in enumerate(devices)
-        if d['max_input_channels'] > 0
-    ]
+    device_list = []
+    for i, d in enumerate(devices):
+        # Get the host API name for the device
+        hostapi_name = hostapis[d['hostapi']]['name']
+        # Only consider devices using Windows WASAPI
+        if hostapi_name == 'Windows WASAPI' and d['max_input_channels'] > 0 and is_device_usable(i):
+            device_list.append({
+                "index": i,
+                "name": d["name"],
+                "is_current": i == current_device
+            })
     return {"devices": device_list}
 
 
@@ -197,8 +208,16 @@ async def list_audio_devices_api() -> Dict[str, List[Dict[str, Any]]]:
 async def set_audio_device(device: DeviceIndex):
     """Set microphone device."""
     try:
+        # Optionally, ensure the device uses Windows WASAPI
+        devices = sd.query_devices()
+        hostapis = sd.query_hostapis()
+        d = devices[device.index]
+        hostapi_name = hostapis[d['hostapi']]['name']
+        if hostapi_name != 'Windows WASAPI':
+            raise ValueError("Selected device is not using Windows WASAPI.")
+        # Set the default input device
         sd.default.device[0] = device.index
-        device_name = sd.query_devices()[device.index]['name']
+        device_name = d['name']
         configurations.microphone_index = device.index
         logger.info(f"Microphone set to: {device_name}")
         return {
@@ -216,8 +235,8 @@ async def set_audio_device(device: DeviceIndex):
             "message": str(e),
             "device": {
                 "index": configurations.microphone_index,
-                "name": sd.query_devices()[configurations.microphone_index][
-                    'name'] if configurations.microphone_index is not None else "Not set"
+                "name": sd.query_devices()[configurations.microphone_index]['name']
+                if configurations.microphone_index is not None else "Not set"
             }
         }
 
