@@ -315,7 +315,7 @@ function getMenuTemplate(): Electron.MenuItemConstructorOptions[] {
 
     return [
         // Application Header
-        {label: `SayKey v1.0.0`, enabled: false},
+        {label: `SayKey v1.0.1`, enabled: false},
         {type: 'separator'},
 
         // Server Status

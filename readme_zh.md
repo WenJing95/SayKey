@@ -20,7 +20,7 @@ SayKey
 
 ## 🔧 快速开始指南
 
-1. [下载 SayKey](https://github.com/WenJing95/SayKey/releases/download/v1.0.0/SayKey.zip)
+1. [下载 SayKey](https://github.com/WenJing95/SayKey/releases/download/v1.0.1/SayKey.zip)
 2. 解压 `SayKey.zip` 文件
 3. 运行 `SayKey.exe`
 4. 按住 `Ctrl+Q`，说话，然后松开键盘即可将语音转换为文字

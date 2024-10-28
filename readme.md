@@ -19,7 +19,7 @@ uses [SenseVoice](https://github.com/FunAudioLLM/SenseVoice) to do this.
 
 ## 🔧 Quick Start Guide
 
-1. [Download SayKey](https://github.com/WenJing95/SayKey/releases/download/v1.0.0/SayKey.zip)
+1. [Download SayKey](https://github.com/WenJing95/SayKey/releases/download/v1.0.1/SayKey.zip)
 2. Extract the `SayKey.zip` file
 3. Run `SayKey.exe`
 4. Look for the capsule-shaped icon above your taskbar
