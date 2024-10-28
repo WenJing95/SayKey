@@ -56,17 +56,45 @@ const VoiceRecognitionIcon: React.FC<VoiceRecognitionIconProps> = ({
     const [hintText, setHintText] = useState('');
 
     const getShortcutText = useCallback(() => {
-        const t = translations[language];
+        const kbdClass = "inline-flex items-center justify-center h-4 min-w-[16px] px-1 text-[9px] font-medium rounded border border-gray-200/60 bg-gray-50/90 text-gray-600 shadow-[0_1px_1px_rgba(0,0,0,0.1)] backdrop-blur-sm";
+        const plusClass = "mx-0.5 text-[8px] text-gray-400 font-medium";
+
         if (currentShortcut === 'CommandOrControl+Q') {
-            return t['holdCtrlQHint'];
+            return (
+                <div className="flex items-center">
+                    <kbd className={kbdClass}>Ctrl</kbd>
+                    <span className={plusClass}>+</span>
+                    <kbd className={kbdClass}>Q</kbd>
+                </div>
+            );
         } else if (currentShortcut === 'CommandOrControl+CapsLock') {
-            return t['holdCtrlCapsLockHint'];
+            return (
+                <div className="flex items-center">
+                    <kbd className={kbdClass}>Ctrl</kbd>
+                    <span className={plusClass}>+</span>
+                    <kbd className={`${kbdClass} text-[8px]`}>Caps</kbd>
+                </div>
+            );
         } else if (currentShortcut === 'CapsLock') {
-            return t['holdCapsLockHint'];
+            return (
+                <div className="flex items-center">
+                    <kbd className={`${kbdClass} text-[8px]`}>Caps</kbd>
+                </div>
+            );
         } else {
-            return `${t['holdKey']} ${currentShortcut}`;
+            const keys = currentShortcut.split('+');
+            return (
+                <div className="flex items-center">
+                    {keys.map((key, index) => (
+                        <React.Fragment key={key}>
+                            <kbd className={kbdClass}>{key}</kbd>
+                            {index < keys.length - 1 && <span className={plusClass}>+</span>}
+                        </React.Fragment>
+                    ))}
+                </div>
+            );
         }
-    }, [language, currentShortcut]);
+    }, [currentShortcut]);
 
     useEffect(() => {
         if (serverStatus === 'starting') {

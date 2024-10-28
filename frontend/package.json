@@ -1,7 +1,7 @@
 {
   "name": "SayKey",
   "productName": "SayKey",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "SayKey",
   "main": "dist/main.js",
   "icon": "src/icon-light.ico",
